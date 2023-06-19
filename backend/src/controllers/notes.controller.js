@@ -1,15 +1,69 @@
+const Note =  require('../models/Note');
+
 const notesCtrl = {};
 
-notesCtrl.getNotes = (req,res) => res.json({message:[]}) 
+notesCtrl.getNotes = async (req,res) => {
+  try {
+    const notes = await Note.find();
+    res.json(notes);
+  } catch (error) {
+    console.error('Error retrieving notes:',error);
+    res.status(500).json({error:'Server error'});
+  }
+};
+      
+notesCtrl.createNotes = async (req,res) => { 
+  try {
+  const{title,content,date,author} = req.body;
+  const newNote = new Note({
+    title,
+    content,
+    date,
+    author
+  });
+  await newNote.save();
+  res.json({message:'Notes saved'})
+  } catch (error) {
+    console.error('Error creating note:', error);
+    res.status(500).json({message:'Error creating note'});
+  }
+};
 
-notesCtrl.createNotes = (req,res) => res.json({message:'Notes saved'})
+notesCtrl.getNote = async (req,res) =>  {
+  try { 
+    const note = await Note.findById(req.params.id)
+    console.log(note)
+    res.json({note})
+  } catch (error) {
+    console.error('Error creating note:', error);
+    res.status(500).json({message:'Error creating note'});
+  }
+}
 
-notesCtrl.getNote = (req,res) =>  res.json({title:'jhkojhkjkl'})
+notesCtrl.updateNotes = async (req,res) => {
+  try {
+    const {title,content,author} = req.body;
+    await Note.findByIdAndUpdate (req.params.id,{
+      title,
+      author,
+      content
+    })
+    res.json({message:'Note Update'})
+  } catch (error) {
+    console.error('Error update note:', error);
+    res.status(500).json({message:'Error update note'});
+  }
+}
 
-notesCtrl.updateNotes = (req,res) => res.json({message:'User U'})
+notesCtrl.deleteNotes = async (req,res) => { 
+  try { 
+    await Note.findByIdAndDelete(req.params.id)
+    res.json({message:'Note delete'})
+  } catch (error) {
+    console.error('Error deleted note:', error);
+    res.status(500).json({message:'Error deleted note'});
+  }
 
-notesCtrl.deleteNotes = (req,res) => res.json({message:'User delete'})
+}
 
-
-
-module.exports = notesCtrl
+module.exports = notesCtrl;
